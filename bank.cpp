@@ -50,7 +50,7 @@ public:
         cout << "Enter withdraw amount : ";
         cin >> amount;
         
-        if(amount > 0 || amount < balance) {
+        if(amount > 0 && amount < balance) {
         balance -= amount;
         cout << "you deposit is succeful " << amount << "$"<< endl;
         cout << "new balace " << balance << "$" << endl; 
@@ -95,7 +95,8 @@ int main() {
                 
             case 3:
                 b.detail();
-                
+                break;
+            
             case 4:
                 cout << "Thank you so much to use this system" << endl;
                 break;
