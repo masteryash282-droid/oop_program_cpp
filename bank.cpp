@@ -3,7 +3,7 @@
 #include <string>
 #include <iomanip>
 #include <algorithm>
-
+          
 using namespace std;
 
 class BankAccount {
@@ -70,7 +70,7 @@ public:
         string name;
         double initialBalance;
         
-        cout << "Enter account Number : ";
+        cout << "Enter account Number (as you wish) : ";
         getline(cin >> ws, accN);
         
         if(findaccout(accN) != nullptr) {
@@ -84,7 +84,7 @@ public:
         cout << "Enter Initial Amount : ";
         cin >> initialBalance;
         
-        if(initialBalance < 0) {
+        if(initialBalance <= 0) {
             cout << "Initial Balance can not be negative\n";
         }
         
