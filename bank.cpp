@@ -1,111 +1,259 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <iomanip>
+#include <algorithm>
+
 using namespace std;
 
-class Bank {
+class BankAccount {
 private:
-    string holderName;
     string accountNumber;
-    int balance;
+    string holderName;
+    double balance;
 
 public:
-    Bank(string name, string accNumber, int initial) {
-        holderName = name;
-        accountNumber = accNumber;
-        balance = initial;
-    }
-    
-    string get_name() {
-        return holderName;
-    }
-    string get_accNumber() {
+    BankAccount(string accNo, string name, double initialBalance = 0.0)
+        : accountNumber(accNo), holderName(move(name)), balance(initialBalance) {}
+
+    string getAccountNumber() const {
         return accountNumber;
     }
-    int get_balance() {
+
+    string getHolderName() const {
+        return holderName;
+    }
+
+    double getBalance() const {
         return balance;
     }
-    
-    void detail() {
-        cout << "Holder Name : " << get_name() << endl;
-        cout << "Holder account Number : " << get_accNumber() << endl;
-        cout << "Holder Balance : " << get_balance() << endl; 
+
+    void display() const {
+        cout << "Account No : " << accountNumber << '\n';
+        cout << "Holder Name: " << holderName << '\n';
+        cout << "Balance    : " << fixed << setprecision(2) << balance << '\n';
     }
-    
-    void deposite() {
-        int amount;
-        cout << "Enter deposit amount : ";
-        cin >> amount;
-        
-        if(amount > 0) {
+
+    bool deposit(double amount) {
+        if (amount <= 0) {
+            return false;
+        }
         balance += amount;
-        cout << "you deposit is succeful " << amount << "$"<< endl;
-        cout << "new dalace " << balance << "$" << endl; 
-        }
-        else {
-            cout << "Invalid amount retry" << endl;
-        }
+        return true;    
     }
-    void withdraw() {
-        int amount;
-        cout << "Enter withdraw amount : ";
+
+    bool withdraw(double amount) {
+        if (amount <= 0 || amount > balance) {
+            return false;
+        }
+        balance -= amount;
+        return true;
+    }
+};
+
+class BankSystem {
+private:
+    vector<BankAccount> accounts;
+    
+    BankAccount* findaccout(string accNumber) {
+        for(auto& account : accounts) {
+            if(account.getAccountNumber() == accNumber) {
+                return &account;
+            }
+        }
+    return nullptr;
+    }
+
+public:
+    void createAccount() {
+        string accN;
+        string name;
+        double initialBalance;
+        
+        cout << "Enter account Number : ";
+        getline(cin >> ws, accN);
+        
+        if(findaccout(accN) != nullptr) {
+            cout << "The account is alredy \n";
+            return;
+        }
+        
+        cout << "Enter Holder Name : ";
+        getline(cin >> ws, name);
+        
+        cout << "Enter Initial Amount : ";
+        cin >> initialBalance;
+        
+        if(initialBalance < 0) {
+            cout << "Initial Balance can not be negative\n";
+        }
+        
+        accounts.emplace_back(accN, name, initialBalance);
+        
+        cout << "The account is created successfully\n";
+    }
+    
+    void showAccount() {
+        string accN;
+
+        cout << "Enter account Number : ";
+        getline(cin >> ws, accN);
+        
+        BankAccount* account = findaccout(accN);
+        
+        if(account == nullptr) {
+            cout << "The Account Not Fount\n";
+            return;
+        }
+        
+        account->display();
+    }
+    
+    void depositMoney() {
+        string accN;
+        double amount;
+        
+        cout << "Enter Account Number : ";
+        getline(cin >> ws, accN);
+        
+        BankAccount* account = findaccout(accN);
+        if(account == nullptr) {
+            cout << "Account Not Fount\n";
+        }
+        
+        cout << "Enter Deposit Money : ";
         cin >> amount;
         
-        if(amount > 0 && amount < balance) {
-        balance -= amount;
-        cout << "you deposit is succeful " << amount << "$"<< endl;
-        cout << "new balace " << balance << "$" << endl; 
+        if(account->deposit(amount)) {
+            cout << "Deposit successful. New Balance : " << fixed << setprecision(2) << account->getBalance();
+            cout << endl;
+        } else {
+            cout << "Invalid deposit amount.\n";
         }
-        else {
-            cout << "Invalid amount retry" << endl;
+        
+    }
+    
+    void withdrawMoney() {
+        string accN;
+        double amount;
+        
+        cout << "Enter Account Number : ";
+        getline(cin >> ws, accN);
+        
+        BankAccount* account = findaccout(accN);
+        
+        if(account == nullptr) {
+            cout << "Account Not found\n";
+            return;
+        }
+        
+        cout << "Enter Withdraw Money : ";
+        cin >> amount;
+        
+        if(account->withdraw(amount)) {
+            cout << "Withdraw successful. New Balance : " << fixed << setprecision(2) << account->getBalance();
+            cout << endl;
+        } else {
+            cout << "Invalid amount or insufficient balance.\n";
+        }
+    } 
+    
+    void transferMoney() {
+        string senAcc;
+        string recAcc;
+        double amount;
+        
+        cout << "Enter sendr Account Number : ";
+        getline(cin >> ws, senAcc);
+        
+        cout << "Enter reciver Account Number : ";
+        getline(cin >>ws, recAcc);
+        
+        BankAccount* account_1 = findaccout(senAcc);
+        BankAccount* account_2 = findaccout(recAcc);
+        
+        if(account_1 == nullptr || account_2 == nullptr) {
+            cout << "One or both Account Not found\n";
+        }
+        
+        if(account_1 == account_2) {
+            cout << "Sender and receiver cannot be the same account.\n";
+            return;
+        }
+        
+        cout << "Enter amount : ";
+        cin >> amount;
+        
+        if(account_1->withdraw(amount)) { 
+            
+            if(account_2->deposit(amount)) { 
+            cout << "Transfer Money successful.\n";
+            }
+            
+        } else { 
+            cout << "Transfer failed. Check amount and balance.\n"; 
+            
+          }
+    }
+    
+    void listAccounts() {
+        if(accounts.empty()) {
+            cout << "Not Account is Available \n";
+            return;
+        }
+        
+        cout << "\n--- All Accounts ---\n";
+        for(const auto& account : accounts) {
+            cout << "Accout No: "  << account.getHolderName();
+            cout << ", Name : " << account.getHolderName(); 
+            cout << ", Balance : " << fixed << setprecision(2) << account.getBalance();
+            cout << endl;
         }
     }
 };
 
 int main() {
-    string nm, accNum;
-    int amount;
-    
-    cout << "Enter Name : ";
-    getline(cin >> ws, nm);
-    
-    cout << "Enter Account Number : ";
-    getline(cin >> ws, accNum);
-    
-    cout << "Enter initial Amount : "; 
-    cin >> amount;
-    
-    Bank b(nm, accNum, amount);
+    BankSystem bank;
     int choice;
-    
+
     do {
-        cout << "1. deposit " << endl;
-        cout << "2. withdraw " << endl;
-        cout << "3. show detail " << endl;
-        cout << "4. Exit " << endl;
+        cout << "\n===== Bank Account Management System =====\n";
+        cout << "1. Create Account\n";
+        cout << "2. Show Account\n";
+        cout << "3. Deposit Money\n";
+        cout << "4. Withdraw Money\n";
+        cout << "5. Transfer Money\n";
+        cout << "6. List All Accounts\n";
+        cout << "7. Exit\n";
+        cout << "Enter your choice: ";
         cin >> choice;
-        
-        switch(choice) {
+
+        switch (choice) {
             case 1:
-                b.deposite();
+                bank.createAccount();
                 break;
-            
             case 2:
-                b.withdraw();
+                bank.showAccount();
                 break;
-                
             case 3:
-                b.detail();
+                bank.depositMoney();
                 break;
-            
             case 4:
-                cout << "Thank you so much to use this system" << endl;
+                bank.withdrawMoney();
                 break;
-            
+            case 5:
+                bank.transferMoney();
+                break;
+            case 6:
+                bank.listAccounts();
+                break;
+            case 7:
+                cout << "Thank you for using the system.\n";
+                break;
             default:
-                cout << "Invalid try again" << endl;
-                break;
+                cout << "Invalid choice. Try again.\n";
         }
-    } while(choice != 4);
+    } while (choice != 7);
     
     return 0;
 }
