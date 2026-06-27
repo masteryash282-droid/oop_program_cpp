@@ -206,12 +206,11 @@ public:
 
 int main() {
     BankSystem bank;
-    
     int choice;
+    cout << "\n===== Bank Account Management System =====\n";
     
     do {
-        cout << "\n===== Bank Account Management System =====\n";
-        
+        cout << "\n  ════════ MAIN MENU ════════\n";
         cout << "1. Creat The Account \n";
         cout << "2. Show Account \n";
         cout << "3. Deposite Money\n";
